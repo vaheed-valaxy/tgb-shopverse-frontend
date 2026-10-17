@@ -12,24 +12,31 @@ permissions:
   id-token: write
   pull-requests: write
 
+env:
+  RUNS_ON: ubuntu-latest
+
 jobs:   
+  set-variables:
+    runs-on: ubuntu-latest
+    outputs:
+      aws-ecr-role-arn: ${{ steps.set-variables.outputs.aws-ecr-role-arn }}
+      runs-on: ${{ steps.set-variables.outputs.runs-on }}
+    steps:
+      - name: Set Variables
+        id: set-variables
+        env: 
+          AWS_ECR_ROLE_ARN: ${{ env.RUNS_ON == 'ubuntu-latest' && vars.AWS_ECR_ROLE_ARN || '' }}
+        run: |
+          echo "aws-ecr-role-arn=$AWS_ECR_ROLE_ARN" >> "$GITHUB_OUTPUT"
+          echo "runs-on=$RUNS_ON" >> "$GITHUB_OUTPUT"
 
-  # oidc-debug:
-  #   name: Debug GitHub OIDC Claims
-  #   runs-on: ubuntu-latest
-
-  #   permissions:
-  #     id-token: write
-  #     contents: read
-
-  #   steps:
-  #     - name: Show OIDC claims
-  #       uses: github/actions-oidc-debugger@main    # This action gives error
-        
+           
   promote-qa-to-prod:
+    needs: set-variables
     uses: vaheed-valaxy/central-github-actions/.github/workflows/reusable-promote-qa-to-prod.yml@main
     with:
       service-name: frontend
+      runner: ${{ needs.set-variables.outputs.runs-on }}
       
       qa-values-file: envs/qa/values-frontend.yaml
       prod-values-file: envs/prod/values-frontend.yaml
@@ -41,7 +48,7 @@ jobs:
       prod-ecr-repo: shopverse/frontend
       
       aws-region: us-east-1
-      aws-ecr-prod-promotion-role-arn: ${{ vars.AWS_ECR_ROLE_ARN }} # arn:aws:iam::123456789012:role/shopverse-qa-promotion
+      aws-ecr-prod-promotion-role-arn: ${{ needs.set-variables.outputs.aws-ecr-role-arn }}                # arn:aws:iam::123456789012:role/shopverse-qa-promotion
 
       cosign-oidc-issuer: 'https://token.actions.githubusercontent.com'
       cosign-certificate-identity-regexp: '^https://github\.com/vaheed-valaxy/central-github-actions/\.github/workflows/reusable-image-sign\.yml@refs/heads/main$'
