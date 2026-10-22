@@ -152,7 +152,7 @@ jobs:
           echo "--------------------------------------------------"
           echo "Service       : ${SVC}"
           echo "Source Branch : ${SOURCE_BRANCH}"
-          echo "Target Branch : develop"
+          echo "Target Branch : ${TARGET_BRANCH}"
           echo "=================================================="
 
           # --------------------------------------------------
@@ -199,7 +199,7 @@ jobs:
           gh pr create \
             --repo "${GITHUB_REPOSITORY}" \
             --head "${SOURCE_BRANCH}" \
-            --base develop \
+            --base "${TARGET_BRANCH}" \
             --title "PR: ${SOURCE_BRANCH} -> ${TARGET_BRANCH}" \
             --body "$(cat <<EOF
           ## Automated Pull Request
@@ -209,7 +209,7 @@ jobs:
           **Service:** \`${SVC}\`
           **Proposed By:** \`${ACTOR}\`
           **Source branch:** \`${SOURCE_BRANCH}\`
-          **Target branch:** \`develop\`
+          **Target branch:** \`${TARGET_BRANCH}\`
           **Workflow run:** ${SERVER_URL}/${REPOSITORY}/actions/runs/${RUN_ID} 
 
           ### Security checks passed
