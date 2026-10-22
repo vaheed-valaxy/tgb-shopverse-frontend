@@ -27,9 +27,9 @@ jobs:
         env: 
           AWS_ECR_ROLE_ARN: ${{ env.RUNS_ON == 'ubuntu-latest' && vars.AWS_ECR_ROLE_ARN || '' }}
         run: |
-          echo "aws-ecr-role-arn=$AWS_ECR_ROLE_ARN" >> "$GITHUB_OUTPUT"
           echo "runner=$RUNS_ON" >> "$GITHUB_OUTPUT"
-
+          echo "aws-ecr-role-arn=$AWS_ECR_ROLE_ARN" >> "$GITHUB_OUTPUT"
+          
 
   Promote-DEV-to-QA-Job:
     needs: Set-Variables-Job
