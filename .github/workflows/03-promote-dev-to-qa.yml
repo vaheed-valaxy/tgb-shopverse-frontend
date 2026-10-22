@@ -13,14 +13,14 @@ permissions:
   pull-requests: write
 
 env:
-  RUNS_ON: ubuntu-latest
+  RUNS_ON: shopverse-frontend-runners           # ubuntu-latest
 
-jobs:   
-  set-variables:
+jobs:  
+  Set-Variables-Job:
     runs-on: ubuntu-latest
     outputs:
+      runner: ${{ steps.set-variables.outputs.runner }}
       aws-ecr-role-arn: ${{ steps.set-variables.outputs.aws-ecr-role-arn }}
-      runs-on: ${{ steps.set-variables.outputs.runs-on }}
     steps:
       - name: Set Variables
         id: set-variables
@@ -28,14 +28,15 @@ jobs:
           AWS_ECR_ROLE_ARN: ${{ env.RUNS_ON == 'ubuntu-latest' && vars.AWS_ECR_ROLE_ARN || '' }}
         run: |
           echo "aws-ecr-role-arn=$AWS_ECR_ROLE_ARN" >> "$GITHUB_OUTPUT"
-          echo "runs-on=$RUNS_ON" >> "$GITHUB_OUTPUT"
+          echo "runner=$RUNS_ON" >> "$GITHUB_OUTPUT"
 
-  promote-dev-to-qa:
-    needs: set-variables
+
+  Promote-Dev-to-Qa-Job:
+    needs: Set-Variables-Job
     uses: vaheed-valaxy/central-github-actions/.github/workflows/reusable-promote-dev-to-qa.yml@main
     with:
       service-name: frontend
-      runner: ${{ needs.set-variables.outputs.runs-on }}
+      runner: ${{ needs.Set-Variables-Job.outputs.runner }}
       
       dev-values-file: envs/dev/values-frontend.yaml
       qa-values-file: envs/qa/values-frontend.yaml
@@ -47,7 +48,7 @@ jobs:
       qa-ecr-repo: shopverse-qa/frontend
       
       aws-region: us-east-1
-      aws-ecr-qa-promotion-role-arn: ${{ needs.set-variables.outputs.aws-ecr-role-arn }}               # arn:aws:iam::123456789012:role/shopverse-qa-promotion
+      aws-ecr-qa-promotion-role-arn: ${{ needs.Set-Variables-Job.outputs.aws-ecr-role-arn }}            # arn:aws:iam::123456789012:role/shopverse-qa-promotion
   
     secrets:
       GITOPS_TOKEN: ${{ secrets.GITOPS_TOKEN }}
