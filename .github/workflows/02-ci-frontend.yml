@@ -90,7 +90,7 @@ jobs:
   # =============================================================================
 
   Set-Variables-Job:
-    name: AWS Parameters
+    name: Set Variables
     runs-on: ubuntu-latest
 
     outputs:
