@@ -89,15 +89,16 @@ jobs:
   # 1. Prepare AWS / Application Parameters
   # =============================================================================
 
-  Aws-Params-Job:
+  Set-Variables-Job:
     name: AWS Parameters
     runs-on: ubuntu-latest
 
     outputs:
-      ecr-registry: ${{ steps.aws-params.outputs.ecr-registry }}
-      ecr-repository: ${{ steps.aws-params.outputs.ecr-repository }}
-      aws-region: ${{ steps.aws-params.outputs.aws-region }}
-      aws-ecr-role-arn: ${{ steps.aws-params.outputs.aws-ecr-role-arn }}
+      runner: ${{ steps.set-variables.outputs.runner }}
+      ecr-registry: ${{ steps.set-variables.outputs.ecr-registry }}
+      ecr-repository: ${{ steps.set-variables.outputs.ecr-repository }}
+      aws-region: ${{ steps.set-variables.outputs.aws-region }}
+      aws-ecr-role-arn: ${{ steps.set-variables.outputs.aws-ecr-role-arn }}
 
     steps:
       - name: Show GitHub Repository IDs
@@ -107,21 +108,23 @@ jobs:
           echo "Owner ID         : ${{ github.repository_owner_id }}"
           echo "Repository ID    : ${{ github.repository_id }}"
           
-      - name: Construct AWS Parameters
-        id: aws-params
+      - name: Set Variables
+        id: set-variables
         env:
           # AWS_ECR_ROLE_ARN: ${{ runner.environment == 'github-hosted' && vars.AWS_ECR_ROLE_ARN || '' }}
           AWS_ECR_ROLE_ARN: ${{ env.RUNS_ON == 'ubuntu-latest' && vars.AWS_ECR_ROLE_ARN || '' }}
           ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         run: |
+          echo "runner=$RUNS_ON" >> "GITHUB_OUTPUT"
           echo "ecr-registry=$ECR_REGISTRY" >> "$GITHUB_OUTPUT"
           echo "ecr-repository=$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
           echo "aws-region=$AWS_REGION" >> "$GITHUB_OUTPUT"
           echo "aws-ecr-role-arn=$AWS_ECR_ROLE_ARN" >> "$GITHUB_OUTPUT"
-          
-          echo "ECR Registry : $ECR_REGISTRY"
+
+          echo "RUNNER         : $RUNS_ON"
+          echo "ECR Registry   : $ECR_REGISTRY"
           echo "ECR Repository : $ECR_REPOSITORY"
-          echo "AWS Region : $AWS_REGION"
+          echo "AWS Region     : $AWS_REGION"
 
 # =======================================================================================
 # 2. Main CI/CD Pipeline
@@ -129,19 +132,16 @@ jobs:
 
   CI-Job:
     name: Frontend CI/CD
-
-    needs: Aws-Params-Job
+    needs: Set-Variables-Job
 
     uses: ./.github/workflows/_node-build.yml
-
     with:
-
       # =========================================================================
       # General
       # =========================================================================
 
       service-name: frontend
-      runner: ubuntu-latest
+      runner: ${{ needs.Set-Variables-Job.outputs.runner }}
 
       # =========================================================================
       # Application Security Scans
@@ -181,22 +181,22 @@ jobs:
       image-scan: true
       image-push-ecr: true
       
-      ecr-registry: ${{ needs.Aws-Params-Job.outputs.ecr-registry }}
-      ecr-repository: ${{ needs.Aws-Params-Job.outputs.ecr-repository }}
-      aws-region: ${{ needs.Aws-Params-Job.outputs.aws-region }}
-      aws-ecr-role-arn: ${{ needs.Aws-Params-Job.outputs.aws-ecr-role-arn }}
+      ecr-registry: ${{ needs.Set-Variables-Job.outputs.ecr-registry }}
+      ecr-repository: ${{ needs.Set-Variables-Job.outputs.ecr-repository }}
+      aws-region: ${{ needs.Set-Variables-Job.outputs.aws-region }}
+      aws-ecr-role-arn: ${{ needs.Set-Variables-Job.outputs.aws-ecr-role-arn }}
 
       # =========================================================================
       # Image Signing
       # =========================================================================
       
-      image-sign: false
+      image-sign: false                 # Don't enable this
       
       # =========================================================================
       # SBOM
       # =========================================================================
 
-      image-sbom: false
+      image-sbom: false                 # Don't enable this
 
       # =========================================================================
       # GitOps
