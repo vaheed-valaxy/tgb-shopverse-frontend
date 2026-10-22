@@ -68,7 +68,7 @@ permissions:
 # =======================================================================================
 
 env:
-  RUNS_ON: ubuntu-latest
+  RUNS_ON: shopverse-backend-runners                        # ubuntu-latest
   ECR_REPOSITORY: "shopverse-dev/frontend"
   
   AWS_ACCOUNT_ID: ${{ vars.AWS_ACCOUNT_ID }}
