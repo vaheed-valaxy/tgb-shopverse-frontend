@@ -120,7 +120,7 @@ jobs:
 
   Create-PR-Job:
     name: Create PR to develop branch
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.Set-Variables-Job.outputs.runner }}
 
     needs:
       - Set-Variables-Job
