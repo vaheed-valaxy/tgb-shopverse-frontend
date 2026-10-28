@@ -115,7 +115,7 @@ jobs:
           AWS_ECR_ROLE_ARN: ${{ env.RUNS_ON == 'ubuntu-latest' && vars.AWS_ECR_ROLE_ARN || '' }}
           ECR_REGISTRY: "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
         run: |
-          echo "runner=$RUNS_ON" >> "GITHUB_OUTPUT"
+          echo "runner=$RUNS_ON" >> "$GITHUB_OUTPUT"
           echo "ecr-registry=$ECR_REGISTRY" >> "$GITHUB_OUTPUT"
           echo "ecr-repository=$ECR_REPOSITORY" >> "$GITHUB_OUTPUT"
           echo "aws-region=$AWS_REGION" >> "$GITHUB_OUTPUT"
