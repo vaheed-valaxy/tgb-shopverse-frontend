@@ -9,7 +9,7 @@ permissions:
   
 jobs:
   docker-build:
-    runs-on: shopverse-backend-runners
+    runs-on: shopverse-frontend-runners
     env:
       AWS_ACCOUNT_ID: "254405569649"
       AWS_REGION: us-east-1
