@@ -31,6 +31,22 @@ jobs:
 
           echo "Docker BUildx Version"
           docker buildx version
+
+      - name: Some Debug
+        run: |
+          IMAGE="254405569649.dkr.ecr.us-east-1.amazonaws.com/shopverse-dev/frontend"
+          TAG="sha-fae0054"
+
+          echo "========== IMAGE INDEX =========="
+
+          docker buildx imagetools inspect "${IMAGE}:${TAG}"
+          
+          echo "========== IMAGE INDEX RAW JSON =========="
+          
+          docker buildx imagetools inspect "${IMAGE}:${TAG}" --raw | jq .
+
+          docker image inspect "$IMAGE_WITH_TAG" \
+            --format 'OS={{.Os}} ARCH={{.Architecture}} ID={{.Id}}'
           
           
       
